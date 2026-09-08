@@ -1,16 +1,16 @@
 module github.com/goichi-dev/goichi-examples
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/coder/websocket v1.8.15
-	github.com/goichi-dev/goichi v0.3.0
+	github.com/goichi-dev/goichi v0.4.0
 	github.com/valyala/fasthttp v1.74.0
 	google.golang.org/grpc v1.83.2
 )
 
 require (
-	github.com/99designs/gqlgen v0.17.94 // indirect
+	github.com/99designs/gqlgen v0.17.95 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.5.1 // indirect
 	github.com/fasthttp/websocket v1.5.12 // indirect
@@ -30,8 +30,8 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.37 // indirect
 	golang.org/x/net v0.58.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260908043556-f8649ddbbfe6 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect

@@ -20,22 +20,24 @@ goichi-examples/
 
 ## Requirements
 
-Go 1.26 or later. The framework is consumed through a local `replace`:
+Go 1.26 or later. The examples build against a published version of the
+framework, so cloning this repo is enough:
+
+```bash
+git clone https://github.com/goichi-dev/goichi-examples
+cd goichi-examples
+go run ./rest
+```
+
+To try the examples against unreleased framework changes, add a `replace`
+pointing at a local checkout:
 
 ```
 replace github.com/goichi-dev/goichi => ../goichi
 ```
 
-so clone this repo next to the framework:
-
-```
-<parent>/
-├── goichi/
-└── goichi-examples/
-```
-
-Drop the `replace` line once the framework is published under a module path that
-`go get` can resolve.
+Keep that local: CI rejects a committed `replace`, because the examples have to
+compile for anyone who just runs `go get`.
 
 ## Running
 
