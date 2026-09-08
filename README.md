@@ -14,6 +14,7 @@ goichi-examples/
 ├── grpc/         classic gRPC and ConnectRPC on one port
 ├── mqtt/         embedded MQTT broker, publish from REST
 ├── mcp/          MCP tools, resources and prompts for AI agents
+├── proxy/        reverse proxy: HTTP load balancing, WebSocket and TCP/database
 └── full/         every protocol above in one process
 ```
 
@@ -45,6 +46,7 @@ go run ./graphql
 go run ./grpc
 go run ./mqtt
 go run ./mcp
+go run ./proxy
 go run ./full
 ```
 
@@ -60,6 +62,7 @@ Every example listens on `127.0.0.1:8080`, so run one at a time.
 | `grpc` | gRPC + ConnectRPC on `:8080` | `grpcurl -plaintext 127.0.0.1:8080 list` |
 | `mqtt` | broker on `:1883`, `POST /publish`, `GET /mqtt/stats` | `mosquitto_sub -h 127.0.0.1 -t 'sensors/#' -v` |
 | `mcp` | JSON-RPC on `tcp://127.0.0.1:8085`, `GET /mcp/tools` | see [MCP](#mcp) below |
+| `proxy` | `/single`, `/balanced`, `/failover`, `/tenant`, `/ws`, `/proxy/stats`; TCP on `:9300` | `curl 127.0.0.1:8080/balanced/x` twice and watch the backend change |
 | `full` | all of the above; MCP on `:8085` | `curl 127.0.0.1:8080/docs` |
 
 ## MCP
@@ -74,6 +77,48 @@ printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n' | nc 127.0
 Supported methods: `initialize`, `tools/list`, `tools/call`, `resources/list`,
 `prompts/list`. Send one request per line and read one response line back — the
 socket stays open for the whole session.
+
+## Reverse proxy
+
+The `proxy` example starts the upstreams it proxies to, so it runs on its own:
+two HTTP backends (`:9201`, `:9202`), a WebSocket echo server (`:9203`) and a
+line-based TCP service (`:9301`) standing in for a database. In a real
+deployment those live elsewhere and only the proxy configuration is yours.
+
+```bash
+# 1. one upstream, prefix stripped: /single/info arrives upstream as /info
+curl 127.0.0.1:8080/single/info
+
+# 2. load balanced - run it twice, the "backend" field alternates
+curl 127.0.0.1:8080/balanced/x
+
+# 3. one target is deliberately dead; health checks route around it
+curl 127.0.0.1:8080/failover/x
+
+# 4. ModifyRequest/ModifyResponse inject headers each way
+curl -i "127.0.0.1:8080/tenant/x?tenant=acme"   # X-Served-Via, x_tenant_id
+
+# 6. the TCP proxy in front of the stand-in database
+printf 'select 1
+' | nc 127.0.0.1 9300           # -> OK: SELECT 1
+printf 'DROP TABLE users
+' | nc 127.0.0.1 9300   # blocked by the hook
+
+curl 127.0.0.1:8080/proxy/stats
+```
+
+The backends echo the forwarding headers they received, so you can see that
+`X-Forwarded-For` chains and `X-Forwarded-Proto` reports the real scheme.
+
+`/ws` (5) is a WebSocket passthrough: connect any WS client to
+`ws://127.0.0.1:8080/ws` and the upstream echoes each message back.
+
+The TCP proxy is a layer-4 byte pipe, which is why the same code fronts
+Postgres, MySQL, Redis or SMTP without the framework parsing any of them. Its
+hooks work on **byte chunks, not messages** — a chunk boundary is not a protocol
+boundary, so a hook that needs whole packets must buffer them itself. It also
+performs **no authentication**: the upstream service authenticates, and
+`OnConnect` is where connection-level policy such as an IP allow-list belongs.
 
 ## Auth
 
