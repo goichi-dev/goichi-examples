@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/coder/websocket v1.8.15
-	github.com/goichi-dev/goichi v0.2.0
+	github.com/goichi-dev/goichi v0.3.0
 	github.com/valyala/fasthttp v1.74.0
 	google.golang.org/grpc v1.83.2
 )
@@ -36,5 +36,3 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260908043556-f8649ddbbfe6 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 )
-
-replace github.com/goichi-dev/goichi => ../goichi
